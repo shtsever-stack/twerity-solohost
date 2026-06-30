@@ -1,0 +1,30 @@
+services:
+  twerity-solohost:
+    image: ghcr.io/shtsever-stack/twerity-solohost:latest
+    container_name: twerity-solohost
+    labels:
+      - pi.ui.primary=true
+    models:
+      twerity-llm:
+        endpoint_var: TWERITY_DMR_URL
+        model_var: TWERITY_DMR_MODEL
+    ports:
+      - "127.0.0.1:18788:8787"
+    volumes:
+      - ${TWERITY_HOME:-./local/container-data/twerity-home}:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=8787
+      - DATA_DIR=/app/data
+      - APP_PASSWORD=${APP_PASSWORD:-}
+      - LOCAL_MEMORY_KEY=${LOCAL_MEMORY_KEY:-}
+      - TWERITY_MODEL_PROVIDER=${TWERITY_MODEL_PROVIDER:-dmr}
+      - TWERITY_DMR_URL=${TWERITY_DMR_URL:-http://modelrunner.docker.internal:12434/engines/v1}
+      - TWERITY_DMR_MODEL=${TWERITY_DMR_MODEL:-ai/gemma3:1B-Q4_K_M}
+      - TWERITY_DMR_API_KEY=${TWERITY_DMR_API_KEY:-docker-model-runner}
+    restart: unless-stopped
+
+models:
+  twerity-llm:
+    model: ${TWERITY_DMR_MODEL:-ai/gemma3:1B-Q4_K_M}
+    context_size: 8192

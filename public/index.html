@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Twerity Light Beta v0.8</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <div class="grid-glow"></div>
+
+  <section id="lockScreen" class="lock-screen">
+    <div class="lock-shell">
+      <div class="lock-visual">
+        <div class="hero-logo-frame">
+          <img class="hero-logo" src="/logo.png" alt="Twerity Light logo">
+        </div>
+        <div class="signal-card floating">
+          <span class="pulse"></span>
+          Local profile · encrypted on device
+        </div>
+        <div class="light-notice glass-card">
+          <div class="notice-title">Light version notice</div>
+          <p>Twerity Light does not include TWER rewards, and usage here is separate from PortalPi.games.</p>
+          <p>For now, TWER credits are available only on PortalPi.games.</p>
+        </div>
+        <a class="portalpi-promo glass-card" href="https://portalpi.games" target="_blank" rel="noopener">
+          <img src="/portalpi-games.png" alt="PortalPi.games logo">
+          <span><strong>PortalPi.games</strong><small>TWER credits available here</small></span>
+        </a>
+      </div>
+      <div class="lock-card glass-card">
+        <div class="brand-row">
+          <img class="brand-logo" src="/logo.png" alt="Twerity">
+          <div>
+            <strong>Twerity Light</strong>
+            <span>Private local AI Twin</span>
+          </div>
+        </div>
+        <p class="eyebrow">Light Beta · SoloHost · Docker Model Runner</p>
+        <h1>Create a local AI Twin that learns your style.</h1>
+        <p class="muted big-copy">Start in a few minutes, unlock deeper questions, add private journal entries, then export your Twin profile only when you decide.</p>
+        <div class="unlock-row">
+          <input id="passwordInput" type="password" placeholder="Local app password" autocomplete="current-password">
+          <button id="unlockBtn">Unlock</button>
+        </div>
+        <p id="lockMessage" class="message"></p>
+      </div>
+    </div>
+  </section>
+
+  <main id="mainApp" class="app hidden">
+    <aside class="sidebar glass-card">
+      <div class="brand">
+        <img class="brand-logo" src="/logo.png" alt="Twerity">
+        <div>
+          <strong>Twerity Light</strong>
+          <span id="modelName">v0.8 · Local AI Twin</span>
+        </div>
+      </div>
+
+      <div class="readiness-mini">
+        <div class="mini-top">
+          <span>Twin readiness</span>
+          <strong id="readinessScoreMini">0%</strong>
+        </div>
+        <div class="progress-track"><div id="readinessBar" class="progress-fill"></div></div>
+      </div>
+
+      <nav class="tabs" aria-label="Main sections">
+        <button class="tab active" data-tab="overview"><span>Command Center</span></button>
+        <button class="tab" data-tab="start"><span>Start Twin</span></button>
+        <button class="tab gated" data-tab="improve" data-gate="quick"><span>Improve Twin</span></button>
+        <button class="tab gated" data-tab="journal" data-gate="quick"><span>Private Journal</span></button>
+        <button class="tab gated" data-tab="ask" data-gate="quick"><span>Ask Twin</span></button>
+        <button class="tab gated" data-tab="export" data-gate="export"><span>Export Profile</span></button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="dot"></span>
+        Nothing syncs automatically
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <header class="workspace-header glass-card">
+        <div>
+          <p class="eyebrow">Local profile status</p>
+          <h2 id="readinessLevel">Not started</h2>
+          <p id="readinessNext" class="muted">Answer the first question to begin.</p>
+        </div>
+        <div class="score-card">
+          <span id="readinessScore">0%</span>
+          <small>Twin readiness</small>
+        </div>
+      </header>
+
+      <section id="tab-overview" class="tab-panel active">
+        <div class="metrics">
+          <div class="metric-card"><strong id="metricAnswers">0</strong><span>Answers</span></div>
+          <div class="metric-card"><strong id="metricJournal">0</strong><span>Journal entries</span></div>
+          <div class="metric-card"><strong id="metricMemories">0</strong><span>Memories</span></div>
+          <div class="metric-card"><strong id="metricChats">0</strong><span>Chats</span></div>
+        </div>
+
+        <div class="split">
+          <section class="surface hero-panel">
+            <p class="eyebrow">Next best action</p>
+            <h3 id="nextActionTitle">Create your light Twin</h3>
+            <p id="nextActionText" class="muted">Answer a short sequence of questions. Each question appears one at a time, so the page stays focused.</p>
+            <button id="nextActionBtn" class="jump-tab" data-target="start">Start now</button>
+          </section>
+
+          <section class="surface unlock-panel">
+            <h3>Unlock path</h3>
+            <div id="unlockPath" class="unlock-path"></div>
+          </section>
+        </div>
+
+        <section class="surface memory-section">
+          <div class="section-head">
+            <div>
+              <h3>Recent local memories</h3>
+              <p class="muted">Stored only inside this SoloHost profile.</p>
+            </div>
+          </div>
+          <div id="memoryList" class="memory-list"></div>
+        </section>
+      </section>
+
+      <section id="tab-start" class="tab-panel surface">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Quick Start</p>
+            <h3>Build the first usable version of your Twin</h3>
+            <p class="muted">One question at a time. Save when the core profile is ready.</p>
+          </div>
+          <span id="quickStartPill" class="pill">Question 1/7</span>
+        </div>
+
+        <div class="wizard-progress" id="quickStartDots"></div>
+        <article class="question-card">
+          <div>
+            <span id="quickStartStepLabel" class="question-index">Step 1</span>
+            <h4 id="quickStartQuestion">What should your AI Twin help you with?</h4>
+            <p id="quickStartHelp" class="muted">Example: write posts, reply to comments, explain projects, brainstorm ideas.</p>
+          </div>
+          <textarea id="quickStartAnswer" class="large" placeholder="Answer naturally..."></textarea>
+        </article>
+
+        <div class="wizard-actions">
+          <button id="quickPrev" class="secondary" type="button">Back</button>
+          <button id="quickNext" type="button">Next</button>
+          <button id="saveQuickStart" class="success hidden" type="button">Save & unlock Twin</button>
+        </div>
+        <p id="startMessage" class="message"></p>
+      </section>
+
+      <section id="tab-improve" class="tab-panel surface gated-panel" data-gate="quick">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Improve Twin</p>
+            <h3>Deeper questions, shown one by one</h3>
+            <p class="muted">Answer when you want better personality, style and decision memory.</p>
+          </div>
+          <button id="randomQuestion" class="secondary">Skip to another</button>
+        </div>
+
+        <article class="question-card accent-card">
+          <div class="question-meta">
+            <span id="trainingCategory" class="pill">Basic profile</span>
+            <span id="trainingCounter" class="muted">0 answered</span>
+          </div>
+          <h4 id="trainingQuestion">Loading question...</h4>
+          <textarea id="questionAnswer" class="large" placeholder="Write your answer here. This becomes local memory."></textarea>
+        </article>
+        <div class="wizard-actions">
+          <button id="saveAnswer" type="button">Save answer</button>
+          <button id="nextTrainingQuestion" class="secondary" type="button">Next question</button>
+        </div>
+        <p id="improveMessage" class="message"></p>
+      </section>
+
+      <section id="tab-journal" class="tab-panel surface gated-panel" data-gate="quick">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Private Journal</p>
+            <h3>Improve your Twin with real context</h3>
+            <p class="muted">Write freely. Twerity extracts simple local memories from your notes.</p>
+          </div>
+          <span class="pill">Local only</span>
+        </div>
+
+        <div class="journal-prompts">
+          <button class="journal-chip">Today I worked on...</button>
+          <button class="journal-chip">I want my Twin to remember...</button>
+          <button class="journal-chip">This is how I think about...</button>
+        </div>
+        <textarea id="journalEntry" class="journal" placeholder="Write a private journal entry..."></textarea>
+        <button id="saveJournal" type="button">Save journal</button>
+        <div id="learnedBox" class="learned hidden"></div>
+        <p id="journalMessage" class="message"></p>
+      </section>
+
+      <section id="tab-ask" class="tab-panel chat-panel gated-panel" data-gate="quick">
+        <div class="chat-header surface">
+          <div>
+            <p class="eyebrow">Ask Twin</p>
+            <h3>Chat with your local profile</h3>
+            <p class="muted">The answer uses your saved profile and local Docker Model Runner.</p>
+          </div>
+          <button id="scrollChatBottom" class="secondary">Scroll bottom</button>
+        </div>
+        <div class="quick-prompts">
+          <button class="prompt-chip">Explain Twerity Light in simple words.</button>
+          <button class="prompt-chip">Write a short X post in my style.</button>
+          <button class="prompt-chip">Reply to criticism in my style.</button>
+          <button class="prompt-chip">What should I add to improve my Twin?</button>
+        </div>
+        <div id="chatMessages" class="chat-messages surface"></div>
+        <form id="chatForm" class="composer glass-card">
+          <textarea id="chatInput" placeholder="Message your Twin..." rows="1"></textarea>
+          <button id="sendChat" type="submit">Send</button>
+        </form>
+      </section>
+
+      <section id="tab-export" class="tab-panel surface gated-panel" data-gate="export">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Manual export</p>
+            <h3>Download your Twin profile</h3>
+            <p class="muted">Nothing uploads automatically. You decide when to move the profile to Twerity later.</p>
+          </div>
+          <span class="pill">Manual</span>
+        </div>
+        <div class="export-box">
+          <p>Export includes Quick Start answers, deeper answers, journal-derived memories, writing samples, chat history and readiness score.</p>
+          <button id="downloadProfile" type="button">Download Twin Profile</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

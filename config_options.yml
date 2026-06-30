@@ -1,0 +1,76 @@
+title: Twerity Light Configurator
+eyebrow: Private AI Twin
+description: >
+  Configure your local Twerity AI Twin. It runs through SoloHost and uses
+  Docker Model Runner for the local AI model. Nothing syncs automatically.
+output_file: .env
+after_save: Saved. Twerity Light will use these settings when it starts.
+footer_hint: Your AI Twin memory stays on this device.
+
+fixed_values:
+  - name: UID
+    detect: uid
+    env_comment: >
+      Current host user ID detected automatically.
+
+  - name: GID
+    detect: gid
+    env_comment: >
+      Current host group ID detected automatically.
+
+  - name: TWERITY_HOME
+    value: ./local/container-data/twerity-home
+    env_comment: >
+      Host path mounted as Twerity local home. It stores encrypted Twin memory,
+      journal entries, writing samples, and local profile data.
+
+  - name: TWERITY_MODEL_PROVIDER
+    value: dmr
+    env_comment: >
+      Selects Docker Model Runner as the local model backend.
+
+  - name: TWERITY_DMR_API_KEY
+    value: docker-model-runner
+    env_comment: >
+      Local token used by Docker Model Runner inside the SoloHost runtime.
+
+fields:
+  - name: APP_PASSWORD
+    label: Local admin password
+    type: password
+    required: true
+    help: Used to protect access to your local Twerity AI Twin.
+
+  - name: LOCAL_MEMORY_KEY
+    label: Local memory encryption key
+    type: password
+    required: true
+    help: Used to encrypt your AI Twin memory on this device. Keep it safe.
+
+  - name: TWERITY_DMR_MODEL
+    label: Select Local AI model
+    type: select
+    default: ai/gemma3:1B-Q4_K_M
+    required: true
+    help: >
+      Choose the local model used by your AI Twin. Smaller models work on more
+      computers. Larger models give better answers but need more memory and a
+      larger initial download.
+    env_comment: >
+      Model name passed to Docker Model Runner for the local Twerity Twin.
+    options:
+      - value: ai/smollm2
+        label: SmolLM2 0.4B - tiny model, works on most laptops
+      - value: ai/gemma3:1B-Q4_K_M
+        label: Gemma 3 1B - good default for compatibility
+      - value: ai/gemma4:4B-Q4_K_XL
+        label: Gemma 4 4B - better quality, needs stronger machine
+      - value: hf.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf:Q4_0
+        label: Gemma 4 26B - highest quality, needs 24GB memory
+
+  - name: TWERITY_DMR_URL
+    type: hidden
+    default: ""
+    env_comment: >
+      Docker Model Runner endpoint override. Usually blank because Docker
+      Compose injects the working in-container endpoint automatically.

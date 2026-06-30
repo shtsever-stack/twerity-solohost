@@ -1,0 +1,15 @@
+{
+  "name": "twerity-light",
+  "version": "0.6.0",
+  "description": "Twerity Light Beta private local AI Twin for Pi SoloHost using Docker Model Runner.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

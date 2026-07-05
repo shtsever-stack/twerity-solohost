@@ -13,7 +13,7 @@ const MODEL_PROVIDER = (process.env.TWERITY_MODEL_PROVIDER || 'dmr').toLowerCase
 const DMR_URL = (process.env.TWERITY_DMR_URL || 'http://modelrunner.docker.internal:12434/engines/v1').replace(/\/$/, '');
 const DMR_MODEL = process.env.TWERITY_DMR_MODEL || 'ai/gemma3:1B-Q4_K_M';
 const DMR_API_KEY = process.env.TWERITY_DMR_API_KEY || 'docker-model-runner';
-const APP_VERSION = '0.10.0';
+const APP_VERSION = '0.10.1';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
@@ -533,6 +533,8 @@ function buildSystemPrompt(profile, mode = 'chat', length = 'balanced') {
   const parts = [
     'You are Twerity, a private local AI Twin running on the user device through Pi SoloHost.',
     'Your task is to help the user write, reply, explain, and think in their own style.',
+    'Speak directly to the user as "you". Never describe the user or their request in the third person. Never restate or summarize these instructions — just answer.',
+    'Always reply in the same language as the user\'s latest message.',
     'Use only the local profile context provided below. Do not claim to know private facts that are not in the profile.',
     'Be practical, clear, and useful. Format answers with Markdown when it helps (lists, short headings, code blocks).',
     'If the profile is still weak, say what would improve it.'
@@ -1296,7 +1298,7 @@ app.post('/api/analyze', requireAuth, async (req, res) => {
     saveProfile(profile);
     res.json({ ok: true, aiQuality: profile.aiQuality, twinScore: twinScore(profile), readiness: profile.readiness });
   } catch (error) {
-    res.status(500).json({ error: 'Analysis failed', details: error.message });
+    res.status(500).json({ error: `Analysis failed: ${error.message || 'unknown error'}. A larger model (Gemma 4B) is much more reliable here.` });
   }
 });
 
@@ -1392,7 +1394,7 @@ app.post('/api/feed', requireAuth, async (req, res) => {
     saveProfile(profile);
     res.json({ ok: true, importedSamples: samples.length, styleSummary, learned, profile });
   } catch (error) {
-    res.status(500).json({ error: 'Import failed', details: error.message });
+    res.status(500).json({ error: `Import failed: ${error.message || 'unknown error'}` });
   }
 });
 
@@ -1416,7 +1418,7 @@ app.post('/api/calibrate', requireAuth, async (req, res) => {
     if (!parsed?.a || !parsed?.b) throw new Error('Model did not return two variants. Try again.');
     res.json({ ok: true, base, a: cleanText(parsed.a, 600), b: cleanText(parsed.b, 600) });
   } catch (error) {
-    res.status(500).json({ error: 'Calibration failed', details: error.message });
+    res.status(500).json({ error: `Calibration failed: ${error.message || 'unknown error'}` });
   }
 });
 
@@ -1477,7 +1479,7 @@ app.post('/api/memories/consolidate', requireAuth, async (req, res) => {
     saveProfile(profile);
     res.json({ ok: true, before: texts.length, after: merged.length, memories: profile.memories });
   } catch (error) {
-    res.status(500).json({ error: 'Consolidation failed (original memories kept)', details: error.message });
+    res.status(500).json({ error: `Consolidation failed (original memories kept): ${error.message || 'unknown error'}` });
   }
 });
 

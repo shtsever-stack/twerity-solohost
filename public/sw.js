@@ -1,4 +1,4 @@
-const CACHE = 'twerity-light-v0.10.0';
+const CACHE = 'twerity-light-v0.10.1';
 const SHELL = ['/', '/style.css', '/app.js', '/logo.png', '/manifest.json'];
 
 self.addEventListener('install', (event) => {

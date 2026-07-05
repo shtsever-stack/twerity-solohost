@@ -59,14 +59,14 @@ fields:
     env_comment: >
       Model name passed to Docker Model Runner for the local Twerity Twin.
     options:
-      - value: ai/smollm2
-        label: SmolLM2 0.4B - tiny model, works on most laptops
       - value: ai/gemma3:1B-Q4_K_M
-        label: Gemma 3 1B - good default for compatibility
+        label: Gemma 3 1B - default, works on most computers
       - value: ai/gemma4:4B-Q4_K_XL
         label: Gemma 4 4B - recommended for AI analysis, needs stronger machine
       - value: hf.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf:Q4_0
         label: Gemma 4 26B - highest quality, needs 24GB memory
+      - value: ai/smollm2
+        label: SmolLM2 0.4B - English-only, too weak for a real Twin, last resort
 
   - name: TWERITY_DMR_URL
     type: hidden

@@ -32,7 +32,7 @@ fixed_values:
   - name: TWERITY_DMR_API_KEY
     value: docker-model-runner
     env_comment: >
-      Local token used by Docker Model Runner inside the SoloHost runtime.
+      Dummy bearer token for Docker Model Runner's OpenAI-compatible API.
 
 fields:
   - name: APP_PASSWORD
@@ -64,7 +64,7 @@ fields:
       - value: ai/gemma3:1B-Q4_K_M
         label: Gemma 3 1B - good default for compatibility
       - value: ai/gemma4:4B-Q4_K_XL
-        label: Gemma 4 4B - better quality, needs stronger machine
+        label: Gemma 4 4B - recommended for AI analysis, needs stronger machine
       - value: hf.co/google/gemma-4-26B-A4B-it-qat-q4_0-gguf:Q4_0
         label: Gemma 4 26B - highest quality, needs 24GB memory
 

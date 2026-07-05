@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Twerity Light Beta v0.8</title>
+  <meta name="theme-color" content="#070a10">
+  <title>Twerity Light Beta v0.10</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/logo.png">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -41,7 +44,7 @@
         </div>
         <p class="eyebrow">Light Beta · SoloHost · Docker Model Runner</p>
         <h1>Create a local AI Twin that learns your style.</h1>
-        <p class="muted big-copy">Start in a few minutes, unlock deeper questions, add private journal entries, then export your Twin profile only when you decide.</p>
+        <p class="muted big-copy">Start in a few minutes, feed it your real posts, chat in separate conversations, and let the AI itself judge how close your Twin really is to you.</p>
         <div class="unlock-row">
           <input id="passwordInput" type="password" placeholder="Local app password" autocomplete="current-password">
           <button id="unlockBtn">Unlock</button>
@@ -57,13 +60,13 @@
         <img class="brand-logo" src="/logo.png" alt="Twerity">
         <div>
           <strong>Twerity Light</strong>
-          <span id="modelName">v0.8 · Local AI Twin</span>
+          <span id="modelName">v0.10 · Local AI Twin</span>
         </div>
       </div>
 
       <div class="readiness-mini">
         <div class="mini-top">
-          <span>Twin readiness</span>
+          <span>Twin score</span>
           <strong id="readinessScoreMini">0%</strong>
         </div>
         <div class="progress-track"><div id="readinessBar" class="progress-fill"></div></div>
@@ -75,12 +78,14 @@
         <button class="tab gated" data-tab="improve" data-gate="quick"><span>Improve Twin</span></button>
         <button class="tab gated" data-tab="journal" data-gate="quick"><span>Private Journal</span></button>
         <button class="tab gated" data-tab="ask" data-gate="quick"><span>Ask Twin</span></button>
+        <button class="tab gated" data-tab="memory" data-gate="quick"><span>Twin Memory</span></button>
+        <button class="tab" data-tab="settings"><span>Settings</span></button>
         <button class="tab gated" data-tab="export" data-gate="export"><span>Export Profile</span></button>
       </nav>
 
       <div class="sidebar-footer">
-        <span class="dot"></span>
-        Nothing syncs automatically
+        <span id="modelStatusDot" class="dot offline"></span>
+        <span id="modelStatusText">Checking local model…</span>
       </div>
     </aside>
 
@@ -93,7 +98,8 @@
         </div>
         <div class="score-card">
           <span id="readinessScore">0%</span>
-          <small>Twin readiness</small>
+          <small>Twin score</small>
+          <small id="scoreBreakdown" class="score-breakdown"></small>
         </div>
       </header>
 
@@ -102,8 +108,21 @@
           <div class="metric-card"><strong id="metricAnswers">0</strong><span>Answers</span></div>
           <div class="metric-card"><strong id="metricJournal">0</strong><span>Journal entries</span></div>
           <div class="metric-card"><strong id="metricMemories">0</strong><span>Memories</span></div>
-          <div class="metric-card"><strong id="metricChats">0</strong><span>Chats</span></div>
+          <div class="metric-card"><strong id="metricChats">0</strong><span>Conversations</span></div>
         </div>
+
+        <section class="surface ai-quality-section">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">AI quality check</p>
+              <h3>Is your Twin real, or just filled in?</h3>
+              <p class="muted">The local model reads your whole profile and scores how specific and recognizable it actually is. Vague answers score low, even if the data score is high.</p>
+            </div>
+            <button id="analyzeBtn" type="button">Analyze with AI</button>
+          </div>
+          <div id="aiQualityBox" class="ai-quality-box"></div>
+          <p id="analyzeMessage" class="message"></p>
+        </section>
 
         <div class="split">
           <section class="surface hero-panel">
@@ -114,8 +133,8 @@
           </section>
 
           <section class="surface unlock-panel">
-            <h3>Unlock path</h3>
-            <div id="unlockPath" class="unlock-path"></div>
+            <h3>This week</h3>
+            <div id="weeklyRecap" class="weekly-recap"></div>
           </section>
         </div>
 
@@ -125,6 +144,7 @@
               <h3>Recent local memories</h3>
               <p class="muted">Stored only inside this SoloHost profile.</p>
             </div>
+            <button class="secondary jump-tab" data-target="memory">Manage memory</button>
           </div>
           <div id="memoryList" class="memory-list"></div>
         </section>
@@ -158,29 +178,68 @@
         <p id="startMessage" class="message"></p>
       </section>
 
-      <section id="tab-improve" class="tab-panel surface gated-panel" data-gate="quick">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Improve Twin</p>
-            <h3>Deeper questions, shown one by one</h3>
-            <p class="muted">Answer when you want better personality, style and decision memory.</p>
+      <section id="tab-improve" class="tab-panel gated-panel" data-gate="quick">
+        <section class="surface improve-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Feed your Twin</p>
+              <h3>Paste your real posts — the fastest upgrade</h3>
+              <p class="muted">Paste 10–50 of your real posts, comments or messages (separate them with blank lines). Your Twin stores them as writing samples and distills your style and key facts.</p>
+            </div>
+            <span class="pill">Big lever</span>
           </div>
-          <button id="randomQuestion" class="secondary">Skip to another</button>
-        </div>
+          <textarea id="feedText" class="journal" placeholder="Paste your real posts / messages here, separated by empty lines..."></textarea>
+          <div class="wizard-actions">
+            <button id="feedBtn" type="button">Import & learn</button>
+          </div>
+          <div id="feedResult" class="learned hidden"></div>
+          <p id="feedMessage" class="message"></p>
+        </section>
 
-        <article class="question-card accent-card">
-          <div class="question-meta">
-            <span id="trainingCategory" class="pill">Basic profile</span>
-            <span id="trainingCounter" class="muted">0 answered</span>
+        <section class="surface improve-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Style calibration</p>
+              <h3>Which one sounds more like you?</h3>
+              <p class="muted">Your Twin writes the same message two ways. Pick the one that sounds like you — each pick becomes a pinned style memory.</p>
+            </div>
+            <button id="calibrateBtn" class="secondary" type="button">New round</button>
           </div>
-          <h4 id="trainingQuestion">Loading question...</h4>
-          <textarea id="questionAnswer" class="large" placeholder="Write your answer here. This becomes local memory."></textarea>
-        </article>
-        <div class="wizard-actions">
-          <button id="saveAnswer" type="button">Save answer</button>
-          <button id="nextTrainingQuestion" class="secondary" type="button">Next question</button>
-        </div>
-        <p id="improveMessage" class="message"></p>
+          <input id="calibrateInput" placeholder="Optional: your own sentence to calibrate on (otherwise a stock one is used)">
+          <div id="calibrateArea" class="calibrate-area hidden">
+            <p class="muted calibrate-base"></p>
+            <div class="calibrate-options">
+              <button id="calibrateA" class="calibrate-option" type="button"></button>
+              <button id="calibrateB" class="calibrate-option" type="button"></button>
+            </div>
+          </div>
+          <p id="calibrateMessage" class="message"></p>
+        </section>
+
+        <section class="surface improve-block">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Improve Twin</p>
+              <h3>Deeper questions, shown one by one</h3>
+              <p class="muted">Answer when you want better personality, style and decision memory.</p>
+            </div>
+            <button id="randomQuestion" class="secondary">Skip to another</button>
+          </div>
+
+          <article class="question-card accent-card">
+            <div class="question-meta">
+              <span id="trainingCategory" class="pill">Basic profile</span>
+              <span id="trainingCounter" class="muted">0 answered</span>
+            </div>
+            <h4 id="trainingQuestion">Loading question...</h4>
+            <textarea id="questionAnswer" class="large" placeholder="Write your answer here. This becomes local memory."></textarea>
+          </article>
+          <div class="wizard-actions">
+            <button id="saveAnswer" type="button">Save answer</button>
+            <button id="nextTrainingQuestion" class="secondary" type="button">Next question</button>
+          </div>
+          <p id="improveMessage" class="message"></p>
+        </section>
       </section>
 
       <section id="tab-journal" class="tab-panel surface gated-panel" data-gate="quick">
@@ -188,9 +247,14 @@
           <div>
             <p class="eyebrow">Private Journal</p>
             <h3>Improve your Twin with real context</h3>
-            <p class="muted">Write freely. Twerity extracts simple local memories from your notes.</p>
+            <p class="muted">Write freely. Your Twin reads the note and extracts real memories from it.</p>
           </div>
           <span class="pill">Local only</span>
+        </div>
+
+        <div id="dailyPromptBox" class="daily-prompt hidden">
+          <span class="eyebrow">Today's question</span>
+          <button id="dailyPromptText" class="journal-chip daily-chip" type="button"></button>
         </div>
 
         <div class="journal-prompts">
@@ -205,39 +269,193 @@
       </section>
 
       <section id="tab-ask" class="tab-panel chat-panel gated-panel" data-gate="quick">
-        <div class="chat-header surface">
-          <div>
-            <p class="eyebrow">Ask Twin</p>
-            <h3>Chat with your local profile</h3>
-            <p class="muted">The answer uses your saved profile and local Docker Model Runner.</p>
+        <div class="chat-workspace">
+          <aside class="chat-sessions surface">
+            <div class="chat-sessions-head">
+              <strong>Conversations</strong>
+              <button id="newSessionBtn" class="mini-btn" title="New conversation">+ New</button>
+            </div>
+            <input id="sessionSearch" type="search" placeholder="Search conversations..." class="session-search">
+            <div id="sessionList" class="session-list"></div>
+          </aside>
+
+          <div class="chat-main">
+            <div class="chat-topbar surface">
+              <button id="toggleSessions" class="mini-btn only-mobile">☰</button>
+              <div class="chat-topbar-title">
+                <strong id="chatTitle">New chat</strong>
+                <small id="chatSubtitle" class="muted">Answers stream live from your local model.</small>
+              </div>
+              <div class="chat-topbar-actions">
+                <button id="exportSessionBtn" class="mini-btn" title="Download conversation as Markdown">MD</button>
+                <button id="renameSessionBtn" class="mini-btn" title="Rename conversation">Rename</button>
+                <button id="pinSessionBtn" class="mini-btn" title="Pin conversation">Pin</button>
+                <button id="deleteSessionBtn" class="mini-btn danger" title="Delete conversation">Delete</button>
+              </div>
+            </div>
+
+            <div id="chatMessages" class="chat-messages surface"></div>
+
+            <div class="mode-chips" id="modeChips">
+              <button class="mode-chip active" data-mode="chat" data-ph="Message your Twin...">Chat</button>
+              <button class="mode-chip" data-mode="reply" data-ph="Paste the comment/message you need to reply to...">Reply for me</button>
+              <button class="mode-chip" data-mode="rewrite" data-ph="Paste your draft — I'll rewrite it in your voice...">Rewrite</button>
+              <button class="mode-chip" data-mode="post" data-ph="Topic for a post in your style...">Post</button>
+              <button class="mode-chip" data-mode="explain" data-ph="What should I explain the way you would?">Explain</button>
+            </div>
+
+            <form id="chatForm" class="composer glass-card">
+              <textarea id="chatInput" placeholder="Message your Twin..." rows="1"></textarea>
+              <div class="composer-actions">
+                <button id="regenBtn" class="secondary" type="button" title="Regenerate last answer">↻</button>
+                <button id="sendChat" type="submit">Send</button>
+                <button id="stopChat" class="danger-btn hidden" type="button">Stop</button>
+              </div>
+            </form>
           </div>
-          <button id="scrollChatBottom" class="secondary">Scroll bottom</button>
         </div>
-        <div class="quick-prompts">
-          <button class="prompt-chip">Explain Twerity Light in simple words.</button>
-          <button class="prompt-chip">Write a short X post in my style.</button>
-          <button class="prompt-chip">Reply to criticism in my style.</button>
-          <button class="prompt-chip">What should I add to improve my Twin?</button>
+      </section>
+
+      <section id="tab-memory" class="tab-panel surface gated-panel" data-gate="quick">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Twin Memory</p>
+            <h3>Everything your Twin remembers</h3>
+            <p class="muted">Pin what matters, edit what is wrong, delete what should be forgotten. Pinned memories are always used in answers.</p>
+          </div>
+          <div class="memory-head-actions">
+            <span id="memoryCountPill" class="pill">0 memories</span>
+            <button id="consolidateBtn" class="secondary" type="button" title="Merge duplicate memories with the model">Clean up</button>
+          </div>
         </div>
-        <div id="chatMessages" class="chat-messages surface"></div>
-        <form id="chatForm" class="composer glass-card">
-          <textarea id="chatInput" placeholder="Message your Twin..." rows="1"></textarea>
-          <button id="sendChat" type="submit">Send</button>
-        </form>
+
+        <div class="memory-toolbar">
+          <input id="memorySearch" type="search" placeholder="Search memories...">
+          <select id="memoryFilter">
+            <option value="all">All sources</option>
+            <option value="pinned">Pinned only</option>
+            <option value="chat">From chat</option>
+            <option value="journal">From journal</option>
+            <option value="answer">From answers</option>
+            <option value="quick_start">From Quick Start</option>
+            <option value="feed">From imported posts</option>
+            <option value="calibration">From calibration</option>
+            <option value="consolidated">Consolidated</option>
+            <option value="manual">Added manually</option>
+          </select>
+        </div>
+
+        <div class="memory-add">
+          <input id="newMemoryText" placeholder="Teach your Twin something directly... e.g. Always sign posts with -S">
+          <button id="addMemoryBtn" type="button">Add memory</button>
+        </div>
+
+        <div id="fullMemoryList" class="memory-list full"></div>
+        <p id="memoryMessage" class="message"></p>
+      </section>
+
+      <section id="tab-settings" class="tab-panel surface">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Settings</p>
+            <h3>How your Twin answers</h3>
+            <p class="muted">Saved locally in your encrypted profile.</p>
+          </div>
+          <span id="settingsVersionPill" class="pill">v0.10</span>
+        </div>
+
+        <div class="settings-grid">
+          <div class="settings-row provider-row">
+            <div>
+              <strong>AI provider (local only)</strong>
+              <p class="muted">Your Twin runs only on AI that lives on this device: Docker Model Runner, Ollama, LM Studio or any local OpenAI-compatible server. Cloud models are part of Twerity.com.</p>
+            </div>
+            <div class="settings-control provider-control">
+              <div id="providerList" class="provider-list"></div>
+            </div>
+          </div>
+
+          <div class="settings-row provider-row">
+            <div>
+              <strong>Add local provider</strong>
+              <p class="muted">Quick presets or a custom local URL ending in <code>/v1</code>.</p>
+              <div class="provider-presets">
+                <button class="mini-btn provider-preset" type="button" data-label="Ollama" data-url="http://host.docker.internal:11434/v1">Ollama</button>
+                <button class="mini-btn provider-preset" type="button" data-label="LM Studio" data-url="http://host.docker.internal:1234/v1">LM Studio</button>
+              </div>
+            </div>
+            <div class="settings-control provider-form">
+              <input id="provLabel" placeholder="Name (e.g. Ollama)">
+              <input id="provUrl" placeholder="Base URL (http://host.docker.internal:11434/v1)">
+              <input id="provKey" type="password" placeholder="API key (usually empty for local)">
+              <div class="provider-form-actions">
+                <button id="provTestBtn" class="secondary" type="button">Test</button>
+                <button id="provAddBtn" type="button">Add provider</button>
+              </div>
+              <p id="provMessage" class="message"></p>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div>
+              <strong>Creativity</strong>
+              <p class="muted">Lower = more predictable and precise. Higher = more varied and expressive.</p>
+            </div>
+            <div class="settings-control">
+              <input id="setTemperature" type="range" min="0.1" max="1.2" step="0.05">
+              <span id="setTemperatureValue" class="pill">0.65</span>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div>
+              <strong>Answer length</strong>
+              <p class="muted">Default length for Twin answers.</p>
+            </div>
+            <div class="settings-control">
+              <select id="setLength">
+                <option value="short">Short</option>
+                <option value="balanced">Balanced</option>
+                <option value="detailed">Detailed</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-row">
+            <div>
+              <strong>Model</strong>
+              <p class="muted">Models available on the selected provider.</p>
+            </div>
+            <div class="settings-control">
+              <select id="setModel"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-actions">
+          <button id="saveSettingsBtn" type="button">Save settings</button>
+        </div>
+        <p id="settingsMessage" class="message"></p>
       </section>
 
       <section id="tab-export" class="tab-panel surface gated-panel" data-gate="export">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Manual export</p>
-            <h3>Download your Twin profile</h3>
+            <p class="eyebrow">Manual export & import</p>
+            <h3>Your Twin profile, your file</h3>
             <p class="muted">Nothing uploads automatically. You decide when to move the profile to Twerity later.</p>
           </div>
           <span class="pill">Manual</span>
         </div>
         <div class="export-box">
-          <p>Export includes Quick Start answers, deeper answers, journal-derived memories, writing samples, chat history and readiness score.</p>
+          <p>Export includes Quick Start answers, deeper answers, journal-derived memories, writing samples, all conversations and scores.</p>
           <button id="downloadProfile" type="button">Download Twin Profile</button>
+        </div>
+        <div class="export-box import-box">
+          <p>Restore a Twin profile from a previous export. This replaces the current local profile (a local snapshot of the old one is kept automatically).</p>
+          <input id="importFile" type="file" accept="application/json" class="hidden">
+          <button id="importProfileBtn" class="secondary" type="button">Import Twin Profile</button>
+          <p id="importMessage" class="message"></p>
         </div>
       </section>
     </section>

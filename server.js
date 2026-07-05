@@ -13,7 +13,7 @@ const MODEL_PROVIDER = (process.env.TWERITY_MODEL_PROVIDER || 'dmr').toLowerCase
 const DMR_URL = (process.env.TWERITY_DMR_URL || 'http://modelrunner.docker.internal:12434/engines/v1').replace(/\/$/, '');
 const DMR_MODEL = process.env.TWERITY_DMR_MODEL || 'ai/gemma3:1B-Q4_K_M';
 const DMR_API_KEY = process.env.TWERITY_DMR_API_KEY || 'docker-model-runner';
-const APP_VERSION = '0.10.1';
+const APP_VERSION = '0.10.2';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 

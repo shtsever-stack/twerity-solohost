@@ -768,15 +768,21 @@ h3, h4 { letter-spacing: -.015em; }
 
 .dot.offline { background: var(--yellow); box-shadow: none; animation: none; }
 
-/* Chat layout */
-.chat-panel.active { display: block; min-height: calc(100vh - 206px); }
+/* Chat layout — the workspace is viewport-bound so only the message list
+   scrolls, never the page. The big status header is hidden in chat mode. */
+.app.chat-mode .workspace-header { display: none; }
+.chat-panel.active { display: block; min-height: 0; }
 .chat-workspace {
   display: grid;
   grid-template-columns: 264px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 12px;
-  height: calc(100vh - 210px);
-  min-height: 480px;
+  height: calc(100vh - 48px);
+  height: calc(100dvh - 48px);
+  min-height: 420px;
+  overflow: hidden;
 }
+.chat-workspace > * { min-height: 0; }
 .chat-sessions {
   display: flex;
   flex-direction: column;
@@ -835,6 +841,7 @@ h3, h4 { letter-spacing: -.015em; }
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: 10px;
   min-width: 0;
+  min-height: 0;
 }
 .chat-topbar {
   display: flex;
@@ -1004,8 +1011,20 @@ h3, h4 { letter-spacing: -.015em; }
 .import-box { border-color: rgba(88, 166, 255, .3); background: rgba(88, 166, 255, .06); color: #e8f2ff; margin-top: 14px; }
 
 @media (max-width: 1100px) {
-  .chat-workspace { height: auto; min-height: 70vh; }
+  /* In chat mode the stacked sidebar collapses to a slim horizontal nav so
+     the conversation gets the whole viewport. */
+  .app.chat-mode .sidebar .brand,
+  .app.chat-mode .sidebar .readiness-mini,
+  .app.chat-mode .sidebar .sidebar-footer { display: none; }
+  .app.chat-mode .sidebar { padding: 8px; height: auto; position: static; }
+  .app.chat-mode .tabs { display: flex; overflow-x: auto; gap: 6px; }
+  .app.chat-mode .tabs .tab { white-space: nowrap; min-height: 40px; flex: 0 0 auto; }
+  .app.chat-mode .chat-workspace {
+    height: calc(100vh - 110px);
+    height: calc(100dvh - 110px);
+  }
 }
+
 @media (max-width: 860px) {
   .chat-workspace { grid-template-columns: 1fr; position: relative; }
   .chat-sessions {
@@ -1018,8 +1037,7 @@ h3, h4 { letter-spacing: -.015em; }
   }
   .chat-sessions.open { transform: translateX(0); box-shadow: 20px 0 60px rgba(0,0,0,.5); }
   .only-mobile { display: inline-flex; }
-  .chat-main { grid-template-rows: auto minmax(320px, 1fr) auto auto; }
-  .chat-messages { max-height: 56vh; }
+  .chat-main { grid-template-rows: auto minmax(0, 1fr) auto auto; }
   .memory-toolbar { grid-template-columns: 1fr; }
   .memory-add { grid-template-columns: 1fr; }
   .chat-topbar-actions .mini-btn { padding: 0 9px; }
